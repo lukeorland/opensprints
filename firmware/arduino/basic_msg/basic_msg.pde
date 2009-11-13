@@ -165,6 +165,9 @@ void loop() {
   
   checkSerial();
 
+	static int testPinState=0;
+	digitalWrite(8, testPinState=!testPinState);
+
 
   if (raceStarting) {
     if((millis() - lastCountDownMillis) > 1000){
@@ -182,7 +185,8 @@ void loop() {
       digitalWrite(racer3GoLedPin,HIGH);
     }
   }
-  if (raceStarted) {
+//if (raceStarted) {
+  if (1) {
     currentTimeMillis = millis() - raceStartMillis;
 
     for(int i=0; i<=3; i++)
