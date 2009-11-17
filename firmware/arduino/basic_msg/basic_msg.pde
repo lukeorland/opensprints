@@ -52,7 +52,8 @@ int previousFakeTickMillis = 0;
 int updateInterval = 250;
 unsigned long lastUpdateMillis = 0;
 
-void setup() {
+void setup()
+{
   Serial.begin(115200); 
   pinMode(statusLEDPin, OUTPUT);
   pinMode(racer0GoLedPin, OUTPUT);
@@ -68,18 +69,16 @@ void setup() {
     pinMode(sensorPins[i], INPUT);
     digitalWrite(sensorPins[i], HIGH);
   }
-
 }
 
-void blinkLED() {
-  if (millis() - previousStatusBlinkMillis > statusBlinkInterval) {
+void blinkLED()
+{
+  if (millis() - previousStatusBlinkMillis > statusBlinkInterval)
+	{
     previousStatusBlinkMillis = millis();
-
     lastStatusLEDValue = !lastStatusLEDValue;
-
     digitalWrite(statusLEDPin, lastStatusLEDValue);
   }
-
 }
 
 void raceStart() {
@@ -88,14 +87,18 @@ void raceStart() {
 
 
 void checkSerial(){
-  if(Serial.available()) {
+  if(Serial.available())
+	{
     val = Serial.read();
-    if(isReceivingRaceLength) {
-      if(val != '\r') {
+    if(isReceivingRaceLength)
+		{
+      if(val != '\r')
+			{
         charBuff[charBuffLen] = val;
         charBuffLen++;
       }
-      else if(charBuffLen==2) {
+      else if(charBuffLen==2)
+			{
         // received all the parts of the distance. time to process the value we received.
         // The maximum for 2 chars would be 65 535 ticks.
         // For a 0.25m circumference roller, that would be 16384 meters = 10.1805456 miles.
@@ -104,19 +107,24 @@ void checkSerial(){
         Serial.print("OK ");
         Serial.println(raceLengthTicks,DEC);
       }
-      else {
+      else
+			{
         Serial.println("ERROR receiving tick lengths");
       }
     }
-    else {
-      if(val == 'l') {
+    else
+		{
+      if(val == 'l')
+			{
           charBuffLen = 0;
           isReceivingRaceLength = true;
       }
-      if(val == 'v') {
+      if(val == 'v')
+			{
         Serial.print("basic-1");
       }
-      if(val == 'g') {
+      if(val == 'g')
+			{
         for(int i=0; i<=3; i++)
         {
           racerTicks[i] = 0;
@@ -128,15 +136,14 @@ void checkSerial(){
         lastCountDown = 4;
         lastCountDownMillis = millis();
       }
-          
-      else if(val == 'm') {
+      else if(val == 'm')
+			{
         // toggle mock mode
         mockMode = !mockMode;
       }
-
-      if(val == 's') {
+      if(val == 's')
+			{
         raceStarted = false;
-
         digitalWrite(racer0GoLedPin,LOW);
         digitalWrite(racer1GoLedPin,LOW);
         digitalWrite(racer2GoLedPin,LOW);
@@ -146,8 +153,10 @@ void checkSerial(){
   }
 }
 
-void printStatusUpdate() {
-  if(currentTimeMillis - lastUpdateMillis > updateInterval) {
+void printStatusUpdate()
+{
+  if(currentTimeMillis - lastUpdateMillis > updateInterval)
+	{
     lastUpdateMillis = currentTimeMillis;
     for(int i=0; i<=3; i++)
     {
@@ -160,7 +169,8 @@ void printStatusUpdate() {
   }
 }
 
-void loop() {
+void loop()
+{
   blinkLED();
   
   checkSerial();
@@ -168,13 +178,15 @@ void loop() {
 	static int testPinState=0;
 	digitalWrite(8, testPinState=!testPinState);
 
-
-  if (raceStarting) {
-    if((millis() - lastCountDownMillis) > 1000){
+  if (raceStarting)
+	{
+    if((millis() - lastCountDownMillis) > 1000)
+		{
       lastCountDown -= 1;
       lastCountDownMillis = millis();
     }
-    if(lastCountDown == 0) {
+    if(lastCountDown == 0)
+		{
       raceStart();
       raceStarting = false;
       raceStarted = true;
@@ -188,14 +200,16 @@ void loop() {
 //if (raceStarted) {
   if (1) {
     currentTimeMillis = millis() - raceStartMillis;
-
     for(int i=0; i<=3; i++)
     {
-      if(!mockMode) {
+      if(!mockMode)
+			{
         values[i] = digitalRead(sensorPins[i]);
-        if(values[i] == HIGH && previoussensorValues[i] == LOW){
+        if(values[i] == HIGH && previoussensorValues[i] == LOW)
+				{
           racerTicks[i]++;
-          if(racerFinishTimeMillis[i] == 0 && racerTicks[i] >= raceLengthTicks) {
+          if(racerFinishTimeMillis[i] == 0 && racerTicks[i] >= raceLengthTicks)
+					{
             racerFinishTimeMillis[i] = currentTimeMillis;          
             Serial.print(i);
             Serial.print("f: ");
@@ -205,10 +219,13 @@ void loop() {
         }
         previoussensorValues[i] = values[i];
       }
-      else {
-        if(currentTimeMillis - lastUpdateMillis > updateInterval) {
+      else
+			{
+        if(currentTimeMillis - lastUpdateMillis > updateInterval)
+				{
           racerTicks[i]+=(i+1);
-          if(racerFinishTimeMillis[i] == 0 && racerTicks[i] >= raceLengthTicks) {
+          if(racerFinishTimeMillis[i] == 0 && racerTicks[i] >= raceLengthTicks)
+					{
             racerFinishTimeMillis[i] = currentTimeMillis;          
             Serial.print(i);
             Serial.print("f: ");
@@ -221,13 +238,16 @@ void loop() {
   }
   
 
-  if(racerFinishTimeMillis[0] != 0 && racerFinishTimeMillis[1] != 0 && racerFinishTimeMillis[2] != 0 && racerFinishTimeMillis[3] != 0){
-    if(raceStarted) {
+  if(racerFinishTimeMillis[0] != 0 && racerFinishTimeMillis[1] != 0 && racerFinishTimeMillis[2] != 0 && racerFinishTimeMillis[3] != 0)
+	{
+    if(raceStarted)
+		{
       raceStarted = false;
       printStatusUpdate();
     }
-  } else {
+  }
+	else
+	{
     printStatusUpdate();
   }
 }
-
