@@ -52,6 +52,10 @@ int previousFakeTickMillis = 0;
 int updateInterval = 250;
 unsigned long lastUpdateMillis = 0;
 
+ISR( PCINT1_vect )
+{
+	// reaction to pin change interrupts goes here.
+}
 void setup()
 {
   Serial.begin(115200); 
@@ -69,6 +73,12 @@ void setup()
     pinMode(sensorPins[i], INPUT);
     digitalWrite(sensorPins[i], HIGH);
   }
+	// make digital IO pins 2,3,4,5 pin change interrupts
+	PCICR |= (1 << PCIE2);
+	PCMSK2 |= (1 << PCIE18);
+	PCMSK2 |= (1 << PCIE19);
+	PCMSK2 |= (1 << PCIE20);
+	PCMSK2 |= (1 << PCIE21);
 }
 
 void blinkLED()
