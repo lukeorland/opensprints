@@ -272,11 +272,13 @@ void loop()
     }
   }
   
-  if(racerFinishTimeMillis[0] != 0 && racerFinishTimeMillis[1] != 0 && racerFinishTimeMillis[2] != 0 && racerFinishTimeMillis[3] != 0)
-	{
-    if(raceStarted)
-		{
+  if(racerFinishTimeMillis[0] != 0 && racerFinishTimeMillis[1] != 0 && racerFinishTimeMillis[2] != 0 && racerFinishTimeMillis[3] != 0){
+    if(raceStarted) {
       raceStarted = false;
+      printStatusUpdate();
     }
+  } else {
+    printStatusUpdate();
   }
 }
+
