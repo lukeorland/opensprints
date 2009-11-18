@@ -74,7 +74,7 @@ ISR(PCINT2_vect)
 	// Register rising edge events
 	previousSensorValues = currentSensorValues;
 	currentSensorValues = PIND;
-	newRisingEdges = previousSensorValues & currentSensorValues;
+	newRisingEdges = (previousSensorValues ^ currentSensorValues) & currentSensorValues;
 	for(int i=0;i<NUM_SENSORS;i++)
 	{
 		if(newRisingEdges & (1<<sensorPortDPinsAvr[i]))
