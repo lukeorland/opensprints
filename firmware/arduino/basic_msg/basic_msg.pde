@@ -66,7 +66,7 @@ int previousFakeTickMillis = 0;
 int updateInterval = 250;
 unsigned long lastUpdateMillis = 0;
 
-ISR(PCINT1_vect)
+ISR(PCINT2_vect)
 {
 	unsigned long pcInterruptTimeMillis = millis();
   unsigned int newRisingEdges;
