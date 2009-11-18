@@ -43,7 +43,7 @@ int sensorPortDPinsAvr[NUM_SENSORS] = {2,3,4,5};
 int previousSensorValues;
 int currentSensorValues;
 unsigned long racerTicks[NUM_SENSORS] = {0,0,0,0};
-unsigned long racerFinishTimeMillis[NUM_SENSORS];
+unsigned long racerFinishTimeMillis[NUM_SENSORS] = {0,0,0,0};
 
 boolean wasRacerFinishAnnounced[NUM_SENSORS] = 
 {
@@ -60,7 +60,7 @@ unsigned int charBuff[8];
 unsigned int charBuffLen = 0;
 boolean isReceivingRaceLength = false;
 
-int raceLengthTicks = 20;
+int raceLengthTicks = 1000;
 int previousFakeTickMillis = 0;
 
 int updateInterval = 250;
@@ -68,7 +68,7 @@ unsigned long lastUpdateMillis = 0;
 
 ISR(PCINT2_vect)
 {
-	unsigned long pcInterruptTimeMillis = millis();
+	currentTimeMillis = millis() - raceStartMillis;
   unsigned int newRisingEdges;
 
 	// Register rising edge events
@@ -83,7 +83,7 @@ ISR(PCINT2_vect)
 		}
 		if(racerTicks[i] == raceLengthTicks)
 		{
-			racerFinishTimeMillis[i] = pcInterruptTimeMillis;
+			racerFinishTimeMillis[i] = currentTimeMillis;
 		}
 	}
 }
@@ -121,11 +121,6 @@ void blinkLED()
     digitalWrite(statusLEDPin, lastStatusLEDValue);
   }
 }
-
-void raceStart() {
-  raceStartMillis = millis();
-}
-
 
 void checkSerial(){
   if(Serial.available())
@@ -166,12 +161,6 @@ void checkSerial(){
       }
       if(val == 'g')
 			{
-        for(int i=0; i<=3; i++)
-        {
-          racerTicks[i] = 0;
-          racerFinishTimeMillis[i] = 256*0;          
-        }
-
         raceStarting = true;
         raceStarted = false;
         lastCountDown = 4;
@@ -228,7 +217,7 @@ void loop()
     }
     if(lastCountDown == 0)
 		{
-      raceStart();
+			raceStartMillis = millis();
       raceStarting = false;
       raceStarted = true;
 
@@ -237,9 +226,11 @@ void loop()
       digitalWrite(racer2GoLedPin,HIGH);
       digitalWrite(racer3GoLedPin,HIGH);
 
-			for(int i=0;i<NUM_SENSORS;i++)
+			for(int i=0; i < NUM_SENSORS; i++)
 			{
 				wasRacerFinishAnnounced[i]=false;
+				racerTicks[i] = 0;
+				racerFinishTimeMillis[i] = 0;
 			}
     }
   }
@@ -254,7 +245,6 @@ void loop()
 				{
           if(racerTicks[i] >= raceLengthTicks)
 					{
-            racerFinishTimeMillis[i] = currentTimeMillis;          
             Serial.print(i);
             Serial.print("f: ");
             Serial.println(racerFinishTimeMillis[i], DEC);
@@ -276,6 +266,7 @@ void loop()
             Serial.println(racerFinishTimeMillis[i], DEC);
             digitalWrite(racer0GoLedPin+i,LOW);
           }
+					printStatusUpdate();
         }
       }
     }
@@ -286,11 +277,6 @@ void loop()
     if(raceStarted)
 		{
       raceStarted = false;
-      printStatusUpdate();
     }
-  }
-	else
-	{
-    printStatusUpdate();
   }
 }

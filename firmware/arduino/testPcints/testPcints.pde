@@ -20,26 +20,32 @@ void loop()
 {
 	static unsigned long lastTime;
 	static unsigned long thisTime;
-	lastTime = thisTime;
-	thisTime = millis();
+//	lastTime = thisTime;
+	thisTime = micros();
+	unsigned long interval = 25000;
 
 	if(thisTime != lastTime)
 	{
-		if(thisTime % 25 == 0)
+		if(lastTime + interval < thisTime)
 		{
 			digitalWrite(2, pin2state = !pin2state);
+			lastTime = thisTime;
 		}
-		if(thisTime % 50 == 0)
-		{
-			digitalWrite(3, pin3state = !pin3state);
-		}
-		if(thisTime % 100 == 0)
-		{
-			digitalWrite(4, pin4state = !pin4state);
-		}
-		if(thisTime % 200 == 0)
-		{
-			digitalWrite(5, pin5state = !pin5state);
-		}
+//		if(thisTime % 25 == 0)
+//		{
+//			digitalWrite(2, pin2state = !pin2state);
+//		}
+//		if(thisTime % 25 == 0)
+//		{
+//			digitalWrite(3, pin3state = !pin3state);
+//		}
+//		if(thisTime % 25 == 0)
+//		{
+//			digitalWrite(4, pin4state = !pin4state);
+//		}
+//		if(thisTime % 25 == 0)
+//		{
+//			digitalWrite(5, pin5state = !pin5state);
+//		}
 	}
 }
