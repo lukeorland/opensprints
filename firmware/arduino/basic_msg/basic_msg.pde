@@ -75,7 +75,7 @@ ISR(PCINT2_vect)
 	previousSensorValues = currentSensorValues;
 	currentSensorValues = PIND;
 	newRisingEdges = (previousSensorValues ^ currentSensorValues) & currentSensorValues;
-	for(int i=0;i<NUM_SENSORS;i++)
+	for(int i=0; i < NUM_SENSORS; i++)
 	{
 		if(newRisingEdges & (1<<sensorPortDPinsAvr[i]))
 		{
@@ -99,7 +99,7 @@ void setup()
   digitalWrite(racer1GoLedPin, LOW);
   digitalWrite(racer2GoLedPin, LOW);
   digitalWrite(racer3GoLedPin, LOW);
-  for(int i=0; i<=3; i++)
+  for(int i=0; i < NUM_SENSORS; i++)
   {
     pinMode(sensorPinsArduino[i], INPUT);
     digitalWrite(sensorPinsArduino[i], HIGH);		// set weak pull-up
@@ -188,7 +188,7 @@ void printStatusUpdate()
   if(currentTimeMillis - lastUpdateMillis > updateInterval)
 	{
     lastUpdateMillis = currentTimeMillis;
-    for(int i=0; i<=3; i++)
+    for(int i=0; i < NUM_SENSORS; i++)
     {
       Serial.print(i);
       Serial.print(": ");
@@ -237,7 +237,7 @@ void loop()
 	if (raceStarted)
 	{
     currentTimeMillis = millis() - raceStartMillis;
-		for(int i=0;i<NUM_SENSORS;i++)
+		for(int i=0; i < NUM_SENSORS; i++)
 		{
       if(!mockMode)
 			{
