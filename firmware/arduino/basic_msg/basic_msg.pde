@@ -45,13 +45,8 @@ int currentSensorValues;
 unsigned long racerTicks[NUM_SENSORS] = {0,0,0,0};
 unsigned long racerFinishTimeMillis[NUM_SENSORS] = {0,0,0,0};
 
-boolean wasRacerFinishAnnounced[NUM_SENSORS] = 
-{
-	false,
-	false,
-	false,
-	false,
-};
+unsigned int racerFinishedFlags = 0;
+#define ALL_RACERS_FINISHED_MASK	0x0F // binary 00001111
 
 unsigned long lastCountDownMillis;
 int lastCountDown;
@@ -225,7 +220,7 @@ void loop()
 
 			for(int i=0; i < NUM_SENSORS; i++)
 			{
-				wasRacerFinishAnnounced[i]=false;
+				racerFinishedFlags=0;
 				racerTicks[i] = 0;
 				racerFinishTimeMillis[i] = 0;
 			}
@@ -238,7 +233,7 @@ void loop()
 		{
       if(!mockMode)
 			{
-				if(!wasRacerFinishAnnounced[i])
+				if(!(racerFinishedFlags & (1<<i)))
 				{
           if(racerTicks[i] >= raceLengthTicks)
 					{
@@ -246,7 +241,7 @@ void loop()
             Serial.print("f: ");
             Serial.println(racerFinishTimeMillis[i], DEC);
             digitalWrite(racer0GoLedPin+i,LOW);
-						wasRacerFinishAnnounced[i]=true;
+						racerFinishedFlags |= (1<<i);
           }
 				}
 			}
@@ -266,6 +261,10 @@ void loop()
         }
       }
     }
+		if(racerFinishedFlags == ALL_RACERS_FINISHED_MASK)
+		{
+			raceStarted = false;
+		}
 		printStatusUpdate();
   }
 }
