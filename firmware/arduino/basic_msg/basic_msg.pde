@@ -25,8 +25,6 @@ long statusBlinkInterval = 250;
 int lastStatusLEDValue = LOW;
 long previousStatusBlinkMillis = 0;
 
-boolean raceStarted = false;
-boolean raceStarting = false;
 boolean mockMode = false;
 unsigned long raceStartMillis;
 unsigned long currentTimeMillis;
@@ -58,8 +56,16 @@ boolean isReceivingRaceLength = false;
 int raceLengthTicks = 1000;
 int previousFakeTickMillis = 0;
 
-int updateInterval = 250;
+int updateInterval = 250;		// milliseconds
 unsigned long lastUpdateMillis = 0;
+
+int state;
+enum
+{
+	STATE_IDLE,
+	STATE_COUNTDOWN,
+	STATE_RACING,
+};
 
 ISR(PCINT2_vect)
 {
@@ -105,6 +111,8 @@ void setup()
 	PCMSK2 |= (1 << PCINT19);
 	PCMSK2 |= (1 << PCINT20);
 	PCMSK2 |= (1 << PCINT21);
+
+	state = STATE_IDLE;
 }
 
 void blinkLED()
@@ -156,8 +164,7 @@ void checkSerial(){
       }
       if(val == 'g')
 			{
-        raceStarting = true;
-        raceStarted = false;
+				state = STATE_COUNTDOWN;
         lastCountDown = 4;
         lastCountDownMillis = millis();
       }
@@ -168,11 +175,12 @@ void checkSerial(){
       }
       if(val == 's')
 			{
-        raceStarted = false;
         digitalWrite(racer0GoLedPin,LOW);
         digitalWrite(racer1GoLedPin,LOW);
         digitalWrite(racer2GoLedPin,LOW);
         digitalWrite(racer3GoLedPin,LOW);
+
+				state = STATE_IDLE;
       }
     }
   }
@@ -200,7 +208,7 @@ void loop()
   
   checkSerial();
 
-  if (raceStarting)
+  if(state == STATE_COUNTDOWN)
 	{
     if((millis() - lastCountDownMillis) > 1000)
 		{
@@ -210,8 +218,6 @@ void loop()
     if(lastCountDown == 0)
 		{
 			raceStartMillis = millis();
-      raceStarting = false;
-      raceStarted = true;
 
       digitalWrite(racer0GoLedPin,HIGH);
       digitalWrite(racer1GoLedPin,HIGH);
@@ -224,9 +230,10 @@ void loop()
 				racerTicks[i] = 0;
 				racerFinishTimeMillis[i] = 0;
 			}
+			state = STATE_RACING;
     }
   }
-	if (raceStarted)
+	if (state == STATE_RACING)
 	{
     currentTimeMillis = millis() - raceStartMillis;
 		for(int i=0; i < NUM_SENSORS; i++)
@@ -263,7 +270,7 @@ void loop()
     }
 		if(racerFinishedFlags == ALL_RACERS_FINISHED_MASK)
 		{
-			raceStarted = false;
+			state = STATE_IDLE;
 		}
 		printStatusUpdate();
   }
