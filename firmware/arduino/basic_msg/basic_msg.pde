@@ -154,9 +154,9 @@ void checkSerial(){
           charBuffLen = 0;
           isReceivingRaceLength = true;
       }
-      if(val == 'v')
+      if(val == 'v')		// version
 			{
-        Serial.print("basic-1");
+        Serial.print("basic-2");
       }
       if(val == 'g')
 			{
