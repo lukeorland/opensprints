@@ -211,8 +211,6 @@ void handleStates()
 		// Print status update
 		{
 			lastUpdateMillis = raceMillis;
-			Serial.print("t: ");
-			Serial.println(raceMillis, DEC);
 			for(int i=0; i < NUM_SENSORS; i++)
 			{
 
@@ -220,6 +218,14 @@ void handleStates()
 				{
           racerTicks[i]+=(i+1);	// manufacture ticks.
 				}
+				Serial.print(i);
+				Serial.print(": ");
+				Serial.println(racerTicks[i], DEC);
+			}
+			Serial.print("t: ");
+			Serial.println(raceMillis, DEC);
+			for(int i=0; i < NUM_SENSORS; i++)
+			{
 
 				if(!(racerFinishedFlags & (1<<i)))
 				// Finished racer hasn't been announced yet.
@@ -233,9 +239,6 @@ void handleStates()
 						racerFinishedFlags |= (1<<i);
           }
 				}
-				Serial.print(i);
-				Serial.print(": ");
-				Serial.println(racerTicks[i], DEC);
 			}
 		}
 		if(racerFinishedFlags == ALL_RACERS_FINISHED_MASK)
