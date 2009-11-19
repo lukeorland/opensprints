@@ -205,9 +205,6 @@ void loop()
   
   checkSerial();
 
-	static int testPinState=0;
-	digitalWrite(8, testPinState=!testPinState);
-
   if (raceStarting)
 	{
     if((millis() - lastCountDownMillis) > 1000)
@@ -266,19 +263,10 @@ void loop()
             Serial.println(racerFinishTimeMillis[i], DEC);
             digitalWrite(racer0GoLedPin+i,LOW);
           }
-					printStatusUpdate();
         }
       }
     }
-  }
-  
-  if(racerFinishTimeMillis[0] != 0 && racerFinishTimeMillis[1] != 0 && racerFinishTimeMillis[2] != 0 && racerFinishTimeMillis[3] != 0){
-    if(raceStarted) {
-      raceStarted = false;
-      printStatusUpdate();
-    }
-  } else {
-    printStatusUpdate();
+		printStatusUpdate();
   }
 }
 
