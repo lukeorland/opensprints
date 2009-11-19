@@ -31,13 +31,9 @@ unsigned long currentTimeMillis;
 
 int val = 0;
 
-int racer0GoLedPin = 9;
-int racer1GoLedPin = 10;
-int racer2GoLedPin = 11;
-int racer3GoLedPin = 12;
-
-int sensorPinsArduino[NUM_SENSORS] = {2,3,4,5};
-int sensorPortDPinsAvr[NUM_SENSORS] = {2,3,4,5};
+int racerGoLedPins[NUM_SENSORS] = {9,10,11,12};	// Arduino digital IOs
+int sensorPinsArduino[NUM_SENSORS] = {2,3,4,5};	// Arduino digital IOs
+int sensorPortDPinsAvr[NUM_SENSORS] = {2,3,4,5};		// Arduino digital IOs
 int previousSensorValues;
 int currentSensorValues;
 unsigned long racerTicks[NUM_SENSORS] = {0,0,0,0};
@@ -92,16 +88,10 @@ void setup()
 {
   Serial.begin(115200); 
   pinMode(statusLEDPin, OUTPUT);
-  pinMode(racer0GoLedPin, OUTPUT);
-  pinMode(racer1GoLedPin, OUTPUT);
-  pinMode(racer2GoLedPin, OUTPUT);
-  pinMode(racer3GoLedPin, OUTPUT);
-  digitalWrite(racer0GoLedPin, LOW);
-  digitalWrite(racer1GoLedPin, LOW);
-  digitalWrite(racer2GoLedPin, LOW);
-  digitalWrite(racer3GoLedPin, LOW);
   for(int i=0; i < NUM_SENSORS; i++)
   {
+		pinMode(racerGoLedPins[i], OUTPUT);
+		digitalWrite(racerGoLedPins[i], LOW);
     pinMode(sensorPinsArduino[i], INPUT);
     digitalWrite(sensorPinsArduino[i], HIGH);		// set weak pull-up
   }
@@ -175,11 +165,10 @@ void checkSerial(){
       }
       if(val == 's')
 			{
-        digitalWrite(racer0GoLedPin,LOW);
-        digitalWrite(racer1GoLedPin,LOW);
-        digitalWrite(racer2GoLedPin,LOW);
-        digitalWrite(racer3GoLedPin,LOW);
-
+				for(int i=0; i < NUM_SENSORS; i++)
+				{
+					digitalWrite(racerGoLedPins[i],LOW);
+				}
 				state = STATE_IDLE;
       }
     }
