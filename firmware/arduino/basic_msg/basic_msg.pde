@@ -175,56 +175,32 @@ void checkSerial(){
   }
 }
 
-void printStatusUpdate()
+void handleStates()
 {
-  if(currentTimeMillis - lastUpdateMillis > updateInterval)
-	{
-    lastUpdateMillis = currentTimeMillis;
-    for(int i=0; i < NUM_SENSORS; i++)
-    {
-      Serial.print(i);
-      Serial.print(": ");
-      Serial.println(racerTicks[i], DEC);
-    }
-    Serial.print("t: ");
-    Serial.println(currentTimeMillis, DEC);
-  }
-}
-
-void loop()
-{
-  blinkLED();
-  
-  checkSerial();
-
+	long systemTime = millis();
   if(state == STATE_COUNTDOWN)
 	{
-    if((millis() - lastCountDownMillis) > 1000)
+    if((systemTime - lastCountDownMillis) > 1000)
 		{
       lastCountDown -= 1;
-      lastCountDownMillis = millis();
+      lastCountDownMillis = systemTime;
     }
     if(lastCountDown == 0)
 		{
-			raceStartMillis = millis();
-
-      digitalWrite(racer0GoLedPin,HIGH);
-      digitalWrite(racer1GoLedPin,HIGH);
-      digitalWrite(racer2GoLedPin,HIGH);
-      digitalWrite(racer3GoLedPin,HIGH);
-
+			raceStartMillis = systemTime;
 			for(int i=0; i < NUM_SENSORS; i++)
 			{
 				racerFinishedFlags=0;
 				racerTicks[i] = 0;
 				racerFinishTimeMillis[i] = 0;
+				digitalWrite(racerGoLedPins[i],HIGH);
 			}
 			state = STATE_RACING;
     }
   }
 	if (state == STATE_RACING)
 	{
-    currentTimeMillis = millis() - raceStartMillis;
+    currentTimeMillis = systemTime - raceStartMillis;
 		for(int i=0; i < NUM_SENSORS; i++)
 		{
       if(!mockMode)
@@ -261,7 +237,26 @@ void loop()
 		{
 			state = STATE_IDLE;
 		}
-		printStatusUpdate();
+		// Print status update
+		if(currentTimeMillis - lastUpdateMillis > updateInterval)
+		{
+			lastUpdateMillis = currentTimeMillis;
+			for(int i=0; i < NUM_SENSORS; i++)
+			{
+				Serial.print(i);
+				Serial.print(": ");
+				Serial.println(racerTicks[i], DEC);
+			}
+			Serial.print("t: ");
+			Serial.println(currentTimeMillis, DEC);
+		}
   }
+}
+
+void loop()
+{
+  blinkLED();
+  checkSerial();
+	handleStates();
 }
 
