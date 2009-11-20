@@ -29,8 +29,6 @@ boolean mockMode = false;
 unsigned long raceStartMillis;
 unsigned long raceMillis;
 
-int val = 0;
-
 int racerGoLedPins[NUM_SENSORS] = {9,10,11,12};	// Arduino digital IOs
 int sensorPinsArduino[NUM_SENSORS] = {2,3,4,5};	// Arduino digital IOs
 int sensorPortDPinsAvr[NUM_SENSORS] = {2,3,4,5};		// Arduino digital IOs
@@ -44,10 +42,6 @@ unsigned int racerFinishedFlags = 0;
 
 unsigned long lastCountDownMillis;
 int lastCountDown;
-
-unsigned int charBuff[8];
-unsigned int charBuffLen = 0;
-boolean isReceivingRaceLength = false;
 
 int raceLengthTicks = 1000;
 
@@ -89,6 +83,7 @@ ISR(PCINT2_vect)
 		}
 	}
 }
+
 void setup()
 {
   Serial.begin(115200); 
@@ -120,64 +115,78 @@ void blinkLED()
   }
 }
 
-void checkSerial(){
-  if(Serial.available())
+void checkSerial()
+{
+	char charBuff[8];
+	char charBuffLen = 0;
+
+	if( (charBuffLen = Serial.available()) > 0 )
 	{
-    val = Serial.read();
-    if(isReceivingRaceLength)
+		Serial.print("charBuffLen:");
+		Serial.println(charBuffLen,DEC);
+		for(int i=0; i < charBuffLen; i++)
 		{
-      if(val != '\r')
-			{
-        charBuff[charBuffLen] = val;
-        charBuffLen++;
-      }
-      else if(charBuffLen==2)
-			{
-        // received all the parts of the distance. time to process the value we received.
-        // The maximum for 2 chars would be 65 535 ticks.
-        // For a 0.25m circumference roller, that would be 16384 meters = 10.1805456 miles.
-        raceLengthTicks = charBuff[1] * 256 + charBuff[0];
-        isReceivingRaceLength = false;
-        Serial.print("OK ");
-        Serial.println(raceLengthTicks,DEC);
-      }
-      else
-			{
-        Serial.println("ERROR receiving tick lengths");
-      }
-    }
-    else
+			charBuff[i] = Serial.read();
+			Serial.print(i,DEC);
+			Serial.print(":");
+			Serial.println(charBuff[i],BYTE);
+		}
+			/*
+		if(charBuff[0] == 'a')		// ACK heartbeat
 		{
-      if(val == 'l')
+			if(charBuffLen==3)
 			{
-          charBuffLen = 0;
-          isReceivingRaceLength = true;
-      }
-      if(val == 'v')		// version
+				// received 2-byte symbol. need to return it.
+				Serial.print("a:");
+				Serial.print(charBuff[1],BYTE);
+				Serial.println(charBuff[2],BYTE);
+			}
+			else
 			{
-        Serial.print("basic-2");
-      }
-      if(val == 'g')
+				Serial.println("NACK");
+			}
+		}
+		else if(charBuff[0] == 'l')
+		{
+			if(charBuffLen==3)
 			{
-				state = STATE_COUNTDOWN;
-        lastCountDown = 4;
-        lastCountDownMillis = millis();
-      }
-      else if(val == 'm')
+				// received all the parts of the distance. time to process the value we received.
+				// The maximum for 2 chars would be 65 535 ticks.
+				// For a 0.25m circumference roller, that would be 16384 meters = 10.1805456 miles.
+				raceLengthTicks = charBuff[2] * 256 + charBuff[1];
+				Serial.print("l:");
+				Serial.println(raceLengthTicks,DEC);
+			}
+			else
 			{
-        // toggle mock mode
-        mockMode = !mockMode;
-      }
-      if(val == 's')
+				Serial.println("ERROR receiving race length ticks");
+			}
+		}
+		else if(charBuff[0] == 'v')		// version
+		{
+			Serial.print("basic-2");
+		}
+		else if(charBuff[0] == 'g')
+		{
+			state = STATE_COUNTDOWN;
+			lastCountDown = 4;
+			lastCountDownMillis = millis();
+		}
+		else if(charBuff[0] == 'm')
+		{
+			// toggle mock mode
+			mockMode = !mockMode;
+		}
+		else if(charBuff[0] == 's')
+		{
+			for(int i=0; i < NUM_SENSORS; i++)
 			{
-				for(int i=0; i < NUM_SENSORS; i++)
-				{
-					digitalWrite(racerGoLedPins[i],LOW);
-				}
-				state = STATE_IDLE;
-      }
-    }
-  }
+				digitalWrite(racerGoLedPins[i],LOW);
+			}
+			state = STATE_IDLE;
+		}
+			*/
+	}
 }
 
 void handleStates()
