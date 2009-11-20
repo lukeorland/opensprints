@@ -50,7 +50,6 @@ unsigned int charBuffLen = 0;
 boolean isReceivingRaceLength = false;
 
 int raceLengthTicks = 1000;
-int previousFakeTickMillis = 0;
 
 int updateInterval = 250;		// milliseconds
 unsigned long lastUpdateMillis = 0;
