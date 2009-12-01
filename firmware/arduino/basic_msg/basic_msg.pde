@@ -119,17 +119,27 @@ void checkSerial()
 {
 	char charBuff[8];
 	char charBuffLen = 0;
+	boolean isGetBufferPaused = true; /*Boolean that states whether the serial buffer has been filled*/
 
-	if( (charBuffLen = Serial.available()) > 0 )
+	if(Serial.available())
 	{
+		while(isGetBufferPaused) /*Checks to see if the buffer has been filled*/
+		{
+			Serial.println("pausing buffer...");
+			delay(1);
+			isGetBufferPaused = false;
+		}
 		Serial.print("charBuffLen:");
-		Serial.println(charBuffLen,DEC);
+		Serial.println(charBuffLen = Serial.available(),DEC);
 		for(int i=0; i < charBuffLen; i++)
 		{
 			charBuff[i] = Serial.read();
 			Serial.print(i,DEC);
 			Serial.print(":");
-			Serial.println(charBuff[i],BYTE);
+			Serial.print(charBuff[i],BYTE);
+			Serial.print(" (0x");
+			Serial.print(charBuff[i],HEX);
+			Serial.println(")");
 		}
 			/*
 		if(charBuff[0] == 'a')		// ACK heartbeat
