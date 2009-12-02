@@ -21,6 +21,7 @@
 #define NUM_SENSORS	4
 #define MAX_LINE 20
 char commandMsg[MAX_LINE + 1];
+int commandMsgLen = 0;
 
 int statusLEDPin = 13;
 long statusBlinkInterval = 250;
@@ -118,7 +119,7 @@ void blinkLED()
   }
 }
 
-boolean commandMsgAvailable(int max_line,char *commandMsg)
+boolean commandMsgAvailable(int max_line,char *line,int *lineLen)
 {
 	int c;
 	static int line_idx = 0;
@@ -127,7 +128,7 @@ boolean commandMsgAvailable(int max_line,char *commandMsg)
 	{
 	  eol = true;
 	  if (max_line == 0)
-	    commandMsg[0] = '\0';
+	    line[0] = '\0';
 	}
 	else		    // valid max_line
 	{
@@ -139,13 +140,14 @@ boolean commandMsgAvailable(int max_line,char *commandMsg)
 				if (c == '\r' || c == '\n')
 					eol = true;
 				else
-					commandMsg[line_idx++] = c;
+					line[line_idx++] = c;
 				if (line_idx >= max_line)
 					eol = true;
-				commandMsg[line_idx] = '\0';     // always terminate line, even if unfinished
+				line[line_idx] = '\0';     // always terminate line, even if unfinished
 			}
 			if (eol)
 			{
+				*lineLen = line_idx;
 				line_idx = 0;	     // reset for next line
 				eol = false;		   // get ready for another line
 				return true;
@@ -158,34 +160,33 @@ boolean commandMsgAvailable(int max_line,char *commandMsg)
 
 void checkSerial()
 {
-	//do something other than waiting for serial transfer
-	if (commandMsgAvailable(MAX_LINE,commandMsg))
+	if (commandMsgAvailable(MAX_LINE,commandMsg,&commandMsgLen))
 	{
-	  Serial.write(commandMsg);	 // echo back the line we just read
-	  Serial.write("\r\n");
-			/*
-		if(charBuff[0] == 'a')		// ACK heartbeat
+//	  Serial.write(commandMsg);	 // echo back the line we just read
+//	  Serial.write("\r\n");
+
+		if(commandMsg[0] == 'a')		// ACK heartbeat
 		{
-			if(charBuffLen==3)
+			if(commandMsgLen==3)
 			{
 				// received 2-byte symbol. need to return it.
 				Serial.print("a:");
-				Serial.print(charBuff[1],BYTE);
-				Serial.println(charBuff[2],BYTE);
+				Serial.print(commandMsg[1],BYTE);
+				Serial.println(commandMsg[2],BYTE);
 			}
 			else
 			{
 				Serial.println("NACK");
 			}
 		}
-		else if(charBuff[0] == 'l')
+		else if(commandMsg[0] == 'l')
 		{
-			if(charBuffLen==3)
+			if(commandMsgLen==3)
 			{
 				// received all the parts of the distance. time to process the value we received.
 				// The maximum for 2 chars would be 65 535 ticks.
 				// For a 0.25m circumference roller, that would be 16384 meters = 10.1805456 miles.
-				raceLengthTicks = charBuff[2] * 256 + charBuff[1];
+				raceLengthTicks = commandMsg[2] * 256 + commandMsg[1];
 				Serial.print("l:");
 				Serial.println(raceLengthTicks,DEC);
 			}
@@ -194,22 +195,22 @@ void checkSerial()
 				Serial.println("ERROR receiving race length ticks");
 			}
 		}
-		else if(charBuff[0] == 'v')		// version
+		else if(commandMsg[0] == 'v')		// version
 		{
 			Serial.print("basic-2");
 		}
-		else if(charBuff[0] == 'g')
+		else if(commandMsg[0] == 'g')
 		{
 			state = STATE_COUNTDOWN;
 			lastCountDown = 4;
 			lastCountDownMillis = millis();
 		}
-		else if(charBuff[0] == 'm')
+		else if(commandMsg[0] == 'm')
 		{
 			// toggle mock mode
 			mockMode = !mockMode;
 		}
-		else if(charBuff[0] == 's')
+		else if(commandMsg[0] == 's')
 		{
 			for(int i=0; i < NUM_SENSORS; i++)
 			{
@@ -217,7 +218,6 @@ void checkSerial()
 			}
 			state = STATE_IDLE;
 		}
-			*/
 	}
 }
 
