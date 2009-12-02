@@ -19,11 +19,15 @@
 #include <avr/io.h>
 
 #define NUM_SENSORS	4
+#define MAX_LINE 20
+
+char line[MAX_LINE + 1];
 
 int statusLEDPin = 13;
 long statusBlinkInterval = 250;
 int lastStatusLEDValue = LOW;
 long previousStatusBlinkMillis = 0;
+
 
 boolean mockMode = false;
 unsigned long raceStartMillis;
@@ -115,32 +119,73 @@ void blinkLED()
   }
 }
 
+boolean lineAvailable(int max_line,char *line,boolean *eol)
+{
+	int c;
+	static int line_idx = 0;
+	if (max_line <= 0)    // handle bad values for max_line
+	{
+	  *eol = true;
+	  if (max_line == 0)
+	    line[0] = '\0';
+	}
+	else		    // valid max_line
+	{
+	  if (Serial.available() > 0)
+	  {
+	    c = Serial.read();
+	    if (c != -1)  // got a char -- should always be true
+	    {
+				if (c == '\r' || c == '\n')
+					*eol = true;
+				else
+					line[line_idx++] = c;
+				if (line_idx >= max_line)
+					*eol = true;
+				line[line_idx] = '\0';     // always terminate line, even if unfinished
+				if (*eol)
+					line_idx = 0;	     // reset for next line
+			}
+	  }
+	  return *eol;
+	}
+}   
+
 void checkSerial()
 {
-	char charBuff[8];
-	char charBuffLen = 0;
-	boolean isGetBufferPaused = true; /*Boolean that states whether the serial buffer has been filled*/
-
-	if(Serial.available())
+	boolean eol = false;
+	//do something other than waiting for serial transfer
+	if (lineAvailable(MAX_LINE,line,&eol))
 	{
-		while(isGetBufferPaused) /*Checks to see if the buffer has been filled*/
-		{
-			Serial.println("pausing buffer...");
-			delay(1);
-			isGetBufferPaused = false;
-		}
-		Serial.print("charBuffLen:");
-		Serial.println(charBuffLen = Serial.available(),DEC);
-		for(int i=0; i < charBuffLen; i++)
-		{
-			charBuff[i] = Serial.read();
-			Serial.print(i,DEC);
-			Serial.print(":");
-			Serial.print(charBuff[i],BYTE);
-			Serial.print(" (0x");
-			Serial.print(charBuff[i],HEX);
-			Serial.println(")");
-		}
+	  Serial.write(line);	 // echo back the line we just read
+	  Serial.write("\r\n");
+	  eol = false;		   // get ready for another line
+
+
+//	char charBuff[8];
+//	char charBuffLen = 0;
+//	boolean isGetBufferPaused = true; /*Boolean that states whether the serial buffer has been filled*/
+//
+//	if(Serial.available())
+//	{
+//		while(isGetBufferPaused) /*Checks to see if the buffer has been filled*/
+//		{
+//			Serial.println("pausing buffer...");
+//			delay(1);
+//			isGetBufferPaused = false;
+//		}
+//		Serial.print("charBuffLen:");
+//		Serial.println(charBuffLen = Serial.available(),DEC);
+//		for(int i=0; i < charBuffLen; i++)
+//		{
+//			charBuff[i] = Serial.read();
+//			Serial.print(i,DEC);
+//			Serial.print(":");
+//			Serial.print(charBuff[i],BYTE);
+//			Serial.print(" (0x");
+//			Serial.print(charBuff[i],HEX);
+//			Serial.println(")");
+//		}
 			/*
 		if(charBuff[0] == 'a')		// ACK heartbeat
 		{
