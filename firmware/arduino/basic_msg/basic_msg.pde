@@ -119,13 +119,14 @@ void blinkLED()
   }
 }
 
-boolean lineAvailable(int max_line,char *line,boolean *eol)
+boolean lineAvailable(int max_line,char *line)
 {
 	int c;
 	static int line_idx = 0;
+	static boolean eol = false;
 	if (max_line <= 0)    // handle bad values for max_line
 	{
-	  *eol = true;
+	  eol = true;
 	  if (max_line == 0)
 	    line[0] = '\0';
 	}
@@ -137,29 +138,32 @@ boolean lineAvailable(int max_line,char *line,boolean *eol)
 	    if (c != -1)  // got a char -- should always be true
 	    {
 				if (c == '\r' || c == '\n')
-					*eol = true;
+					eol = true;
 				else
 					line[line_idx++] = c;
 				if (line_idx >= max_line)
-					*eol = true;
+					eol = true;
 				line[line_idx] = '\0';     // always terminate line, even if unfinished
-				if (*eol)
-					line_idx = 0;	     // reset for next line
 			}
+			if (eol)
+			{
+				line_idx = 0;	     // reset for next line
+				eol = false;		   // get ready for another line
+				return true;
+			}
+			else
+				return false;
 	  }
-	  return *eol;
 	}
 }   
 
 void checkSerial()
 {
-	boolean eol = false;
 	//do something other than waiting for serial transfer
-	if (lineAvailable(MAX_LINE,line,&eol))
+	if (lineAvailable(MAX_LINE,line))
 	{
 	  Serial.write(line);	 // echo back the line we just read
 	  Serial.write("\r\n");
-	  eol = false;		   // get ready for another line
 
 
 //	char charBuff[8];
