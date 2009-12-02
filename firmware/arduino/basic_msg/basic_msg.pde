@@ -20,8 +20,7 @@
 
 #define NUM_SENSORS	4
 #define MAX_LINE 20
-
-char line[MAX_LINE + 1];
+char commandMsg[MAX_LINE + 1];
 
 int statusLEDPin = 13;
 long statusBlinkInterval = 250;
@@ -119,7 +118,7 @@ void blinkLED()
   }
 }
 
-boolean lineAvailable(int max_line,char *line)
+boolean commandMsgAvailable(int max_line,char *commandMsg)
 {
 	int c;
 	static int line_idx = 0;
@@ -128,7 +127,7 @@ boolean lineAvailable(int max_line,char *line)
 	{
 	  eol = true;
 	  if (max_line == 0)
-	    line[0] = '\0';
+	    commandMsg[0] = '\0';
 	}
 	else		    // valid max_line
 	{
@@ -140,10 +139,10 @@ boolean lineAvailable(int max_line,char *line)
 				if (c == '\r' || c == '\n')
 					eol = true;
 				else
-					line[line_idx++] = c;
+					commandMsg[line_idx++] = c;
 				if (line_idx >= max_line)
 					eol = true;
-				line[line_idx] = '\0';     // always terminate line, even if unfinished
+				commandMsg[line_idx] = '\0';     // always terminate line, even if unfinished
 			}
 			if (eol)
 			{
@@ -160,9 +159,9 @@ boolean lineAvailable(int max_line,char *line)
 void checkSerial()
 {
 	//do something other than waiting for serial transfer
-	if (lineAvailable(MAX_LINE,line))
+	if (commandMsgAvailable(MAX_LINE,commandMsg))
 	{
-	  Serial.write(line);	 // echo back the line we just read
+	  Serial.write(commandMsg);	 // echo back the line we just read
 	  Serial.write("\r\n");
 
 
